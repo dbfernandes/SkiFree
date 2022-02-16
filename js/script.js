@@ -34,6 +34,7 @@
       this.element = document.getElementById('skier');
       this.direcoes = ['para-esquerda', 'para-frente', 'para-direita'];
       this.direcao = 1;
+      this.velocidadeHorizontal = 0;
       this.element.className = this.direcoes[this.direcao];
       this.element.style.top = '20px';
       this.element.style.left = parseInt(TAMX/2)-8 + 'px';
@@ -45,8 +46,47 @@
       }
     }
     andar() {
-      if (this.direcao === 0) this.element.style.left = parseInt(this.element.style.left)-1 + 'px';
-      else if (this.direcao === 2) this.element.style.left = parseInt(this.element.style.left)+1 + 'px';
+      const atrito = 0.1;
+      const velocidadeMaxima = 3;
+      const aceleracaoNormal = 0.5;
+      
+      let velocidadeHorizontal = this.velocidadeHorizontal;
+      const orientacao = this.direcao -1 ;
+
+      // desaceleração o skier horizontalmente
+      if(orientacao===0 && velocidadeHorizontal !== 0) {
+        // verifica se o skier está indo para esquerda ou para direita
+        const sinal = velocidadeHorizontal / Math.abs(velocidadeHorizontal);
+        // cria atrito no chão
+        velocidadeHorizontal -= atrito*sinal;
+        // se a velocidade for pequena, freia
+        if(Math.abs(velocidadeHorizontal) < 0.1) {
+          velocidadeHorizontal = 0;
+        }
+      }
+      // aceleração do skier horizontalmente
+      else{
+        // arranque inicial
+        if(velocidadeHorizontal === 0){
+          velocidadeHorizontal = orientacao;
+        }
+        // aceleração normal
+        else{
+          velocidadeHorizontal += aceleracaoNormal*orientacao;
+          if(Math.abs(velocidadeMaxima) < Math.abs(velocidadeHorizontal)){
+            velocidadeHorizontal = velocidadeMaxima*orientacao;
+          }
+        }
+      }
+      // atualiza velocidade do skier
+      this.velocidadeHorizontal = velocidadeHorizontal;
+      // calcula nova posição do skier
+      const novaPosicao = parseInt(this.element.style.left) + velocidadeHorizontal;
+      // verifica se a nova posição é válida
+      if((novaPosicao > 0 && velocidadeHorizontal<0) || (novaPosicao < TAMX - this.element.clientWidth && velocidadeHorizontal>0)) {
+        this.element.style.left = novaPosicao + 'px';
+      }
+
     }
   }
 
